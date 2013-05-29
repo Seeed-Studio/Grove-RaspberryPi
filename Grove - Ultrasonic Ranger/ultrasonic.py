@@ -5,31 +5,24 @@ import time
 
 GPIO_SIG = 11
 
+
 def getAndPrint():
 
-    print "Ultrasonic get data and print"
-    
-    # set up gpio pin GPIO_SIG is out port
-    # GPIO.setup(GPIO_SIG, GPIO.OUT)
+    print "SeeedStudio Grove Ultrasonic get data and print"
 
+    # test 100 times
     for i in range(100):
-
-       #GPIO.output(GPIO_SIG, GPIO.HIGH)
-       #time.sleep(0.001)
-       #GPIO.output(GPIO_SIG, GPIO.LOW)
-       #time.sleep(0.001)
         measurementInCM()
-        #time.sleep(1)
-        #measurementPulse()
 
     # Reset GPIO settings
     GPIO.cleanup()
 
+
 def measurementInCM():
-    
+
     # setup the GPIO_SIG as output
     GPIO.setup(GPIO_SIG, GPIO.OUT)
-    
+
     GPIO.output(GPIO_SIG, GPIO.LOW)
     time.sleep(0.2)
     GPIO.output(GPIO_SIG, GPIO.HIGH)
@@ -49,11 +42,8 @@ def measurementInCM():
 
     measurementPulse(start, stop)
 
-    # rangeInCM = duration/29/2
-    #print "Distance : %.1f" % rangeInCM
 
-
-def measurementPulse(start,stop):
+def measurementPulse(start, stop):
 
     print "Ultrasonic Measurement"
 
