@@ -9,8 +9,9 @@ GPIO_PIR = 11
 def detectedAndPrint():
     GPIO.setup(GPIO_PIR, GPIO.IN)
     print "Nothing"
-    while isDetected():
-        time.sleep(0.2)
+    while 1:
+        isDetected()
+        time.sleep(0.1)
         print "PIR sensor detected some stuff"
 
 
