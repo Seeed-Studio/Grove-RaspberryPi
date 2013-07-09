@@ -6,9 +6,9 @@ OBJ = main.o Barometer.o
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-Demo: $(OBJ)
+barometerDemo: $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS)
 
 clean:
 	rm ./*.o
-	rm Demo
+	rm barometerDemo
