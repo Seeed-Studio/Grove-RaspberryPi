@@ -24,4 +24,5 @@ class ADC121 {
         float readADC();
 };
 
+
 #endif //__ADC121_H__
