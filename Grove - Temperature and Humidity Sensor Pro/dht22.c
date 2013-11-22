@@ -19,6 +19,17 @@
 #define MAXTIMINGS 85
 static int dht22_dat[5] = {0,0,0,0,0};
 
+static void PrintUsage()
+{
+	printf ("ReadDHT22 <pin> <mode>\n"); 
+	printf ("  pin  : GPIO No (0-7)\n"); 
+	printf ("  mode : V - verbose output\n"); 
+	printf ("         S - simple output.\n"); 
+	printf ("             [-]HHH\n"); 
+	printf ("             [-]TTT\n"); 
+	printf ("             Values are signed 16 bit resolution and need dividing by 10\n"); 
+}
+
 static uint8_t sizecvt(const int read)
 {
     /* digitalRead() and friends from wiringpi are defined as returning a value
@@ -32,7 +43,7 @@ static uint8_t sizecvt(const int read)
     return (uint8_t)read;
 }
 
-static int read_dht22_dat(int _pin)
+static int read_dht22_dat(int iPin, int* piHumidity, int* piTemp)
 {
     uint8_t laststate = HIGH;
     uint8_t counter = 0;
@@ -41,31 +52,37 @@ static int read_dht22_dat(int _pin)
     dht22_dat[0] = dht22_dat[1] = dht22_dat[2] = dht22_dat[3] = dht22_dat[4] = 0;
 
     // pull pin down for 18 milliseconds
-    pinMode(_pin, OUTPUT);
-    digitalWrite(_pin, LOW);
+    pinMode(iPin, OUTPUT);
+    digitalWrite(iPin, LOW);
     delay(18);
+
     // then pull it up for 40 microseconds
-    digitalWrite(_pin, HIGH);
+    digitalWrite(iPin, HIGH);
     delayMicroseconds(40); 
-    // prepare to read the pin
-    pinMode(_pin, INPUT);
+    
+	// prepare to read the pin
+    pinMode(iPin, INPUT);
 
     // detect change and read data
-    for ( i=0; i< MAXTIMINGS; i++) {
+    for ( i=0; i< MAXTIMINGS; i++) 
+	{
         counter = 0;
-        while (sizecvt(digitalRead(_pin)) == laststate) {
+        while (sizecvt(digitalRead(iPin)) == laststate) 
+		{
             counter++;
             delayMicroseconds(1);
-            if (counter == 255) {
+            if (counter == 255) 
+			{
                 break;
             }
         }
-        laststate = sizecvt(digitalRead(_pin));
+        laststate = sizecvt(digitalRead(iPin));
 
         if (counter == 255) break;
 
         // ignore first 3 transitions
-        if ((i >= 4) && (i%2 == 0)) {
+        if ((i >= 4) && (i%2 == 0)) 
+		{
             // shove each bit into the storage bytes
             dht22_dat[j/8] <<= 1;
             if (counter > 16)
@@ -76,22 +93,17 @@ static int read_dht22_dat(int _pin)
 
     // check we read 40 bits (8bit x 5 ) + verify checksum in the last byte
     // print it out if data is good
-    if ((j >= 40) && 
-            (dht22_dat[4] == ((dht22_dat[0] + dht22_dat[1] + dht22_dat[2] + dht22_dat[3]) & 0xFF)) ) {
-        float t, h;
-        h = (float)dht22_dat[0] * 256 + (float)dht22_dat[1];
-        h /= 10;
-        t = (float)(dht22_dat[2] & 0x7F)* 256 + (float)dht22_dat[3];
-        t /= 10.0;
-        if ((dht22_dat[2] & 0x80) != 0)  t *= -1;
+    if ((j >= 40) && (dht22_dat[4] == ((dht22_dat[0] + dht22_dat[1] + dht22_dat[2] + dht22_dat[3]) & 0xFF)) ) 
+	{
+		*piHumidity = dht22_dat[0] * 256 + dht22_dat[1];
+		*piTemp = (dht22_dat[2] & 0x7F)* 256 + dht22_dat[3];
+        if ((dht22_dat[2] & 0x80) != 0)  
+			*piTemp *= -1;
 
-
-        printf("Humidity = %.2f %% Temperature = %.2f *C \n", h, t );
-        return 1;
+		return 1;
     }
     else
     {
-        printf("Data not good, skip\n");
         return 0;
     }
 }
@@ -99,36 +111,87 @@ static int read_dht22_dat(int _pin)
 int main( int argc, char * argv[])
 {
     int lockfd;
-    int _pin = 0;
+    int iPin = 0;
+    int iErr = 0;
+    char cMode = 'V';
+	int iReturnCode = 0;
 
-    printf ("Raspberry Pi wiringPi DHT22 reader\n"); 
+    if ( argc !=3 )
+	{	 
+		PrintUsage();
+		return -1;
+	}
+        
+	if (strlen(argv[1]) != 1 || argv[1][0] < '0' || argv[1][0] > '7')
+	{
+		PrintUsage();
+	    printf ("Invalid Pin Value [%s]\n", argv[1]); 
+		return -1;
+	}
+	if (strlen(argv[2]) != 1 || (argv[2][0] != 'V' && argv[2][0] != 'S'))
+	{
+		PrintUsage();
+	    printf ("Invalid Mode Value [%s]\n", argv[2]); 
+		return -1;
+	}
 
-    if ( argc > 1 ) {
-        _pin = argv[1];
-    }
+	iPin = atoi(argv[1]);
+	cMode = argv[2][0];
+
+	if (cMode == 'V')
+	{
+		printf ("Raspberry Pi wiringPi DHT22 reader\n"); 
+	    printf ("   Reading data from pin %d\n", iPin); 
+	}
 
     lockfd = open_lockfile(LOCKFILE);
 
-    if (wiringPiSetup () == -1)
-        exit(EXIT_FAILURE) ;
+	iErr = wiringPiSetup ();
+    if (iErr == -1)
+	{
+		if (cMode == 'V')
+			printf ("ERROR : Failed to init WiringPi %d\n", iErr); 
+        iReturnCode = -1;
+	}
+	else
+	{
+		if (setuid(getuid()) < 0)
+		{
+			perror("Dropping privileges failed\n");
+			iReturnCode = -1;
+		}
+		else
+		{
+			int iHumidity = -1;
+			int iTemp = -1;
 
-    if (setuid(getuid()) < 0)
-    {
-        perror("Dropping privileges failed\n");
-        exit(EXIT_FAILURE);
-    }
+			for(int i = 0; i<10; i++)
+			{
+				// read_dht22_dat(iPin);
+				if (read_dht22_dat(iPin, &iHumidity, &iTemp) == 1) 
+				{
+					if (cMode == 'V')
+						printf("    Humidity = %.2f %% Temperature = %.2f *C \n", (float)(iHumidity/10.0), (float)(iTemp/10.0) );
+					else
+						printf("%d\n%d\n", iHumidity, iTemp);
+					iReturnCode = 0;
+					break;
+				}
+				else
+				{
+					if (cMode == 'V')
+					{
+						printf("    Data not good, skip\n");
+						iReturnCode = -1;
+					}
+				}
+			}
+		}
+	}
 
-    int i = 0;
-    for(i; i<10; i++){
-        // read_dht22_dat(_pin);
-        while (read_dht22_dat(_pin) == 0) 
-        {
-            delay(1000); // wait 1sec to refresh
-        }
-    }
-
-    delay(1500);
     close_lockfile(lockfd);
 
-    return 0 ;
+    return iReturnCode;
 }
+
+
