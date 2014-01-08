@@ -6,17 +6,19 @@
 // This is the I2C address (8 bit)
 //  There are two possible addresses: with D/C# (pin 13) grounded, the address is 0x78,
 //  with D/C# tied high it is 0x7A. Assume grounded by default.
-#define SSD1308_SA0                0x3C
-#define SSD1308_SA1                0x3D
+
+// I2C Slave Address bit "0111 10 SA0 R/W" --> "0x7x"
+#define SSD1308_SA0                0x3C // 0011 1100
+#define SSD1308_SA1                0x3D // 0011 1101
 #define SSD1308_DEF_SA             SSD1308_SA0
 
 // Display dimensions
-#define ROWS                       64
-#define COLUMNS                    128
-#define PAGES                      (ROWS / 8)
+#define ROWS                       64 // Row of the OLED
+#define COLUMNS                    128 // Colume of the OLED
+#define PAGES                      (ROWS / 8) // 0-7 pages
 #define MAX_PAGE                   (PAGES - 1)
-#define MAX_ROW                    (ROWS - 1)
-#define MAX_COL                    (COLUMNS - 1)
+#define MAX_ROW                    (ROWS - 1) //0-63
+#define MAX_COL                    (COLUMNS - 1) // 0-127
 
 // Character dimensions 8x8 font
 #define CHARS                      (COLUMNS / FONT8x8_WIDTH)
