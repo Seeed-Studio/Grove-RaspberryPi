@@ -41,3 +41,6 @@ global distributors and partners to push open hardware movement.<br>
 [2]: http://www.seeedstudio.com/wiki/images/9/92/QQ%E5%9B%BE%E7%89%8720140108102207.jpg
 [3]: http://bbs.xiaomi.cn/thread-7797152-1-1.html
 [4]: mailto://yexiaobo@seeedstudio.com
+
+
+[![Analytics](https://ga-beacon.appspot.com/UA-46589105-3/Grove-RaspberryPi)](https://github.com/igrigorik/ga-beacon)
