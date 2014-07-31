@@ -1,10 +1,34 @@
 /*
- *      dht22.c:
- *  Simple test program to test the wiringPi functions
- *  Based on the existing dht11.c
- *  Amended by technion@lolware.net
- *  Modified by yexiaobo@seeedstudio.com
+ * dht22.c
+ * A library for Grove - Temperature and Humidity Sensor Pro at RP
+ *
+ * Copyright (c) 2012 seeed technology inc.
+ * Website    : www.seeed.cc
+ * Author     : technion@lolware.net, yexiaobo@seeedstudio.com
+ * Create Time:
+ * Change Log :
+ *
+ * The MIT License (MIT)
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
+
 
 #include <wiringPi.h>
 
@@ -21,13 +45,13 @@ static int dht22_dat[5] = {0,0,0,0,0};
 
 static void PrintUsage()
 {
-	printf ("ReadDHT22 <pin> <mode>\n"); 
-	printf ("  pin  : GPIO No (0-7)\n"); 
-	printf ("  mode : V - verbose output\n"); 
-	printf ("         S - simple output.\n"); 
-	printf ("             [-]HHH\n"); 
-	printf ("             [-]TTT\n"); 
-	printf ("             Values are signed 16 bit resolution and need dividing by 10\n"); 
+	printf ("ReadDHT22 <pin> <mode>\n");
+	printf ("  pin  : GPIO No (0-7)\n");
+	printf ("  mode : V - verbose output\n");
+	printf ("         S - simple output.\n");
+	printf ("             [-]HHH\n");
+	printf ("             [-]TTT\n");
+	printf ("             Values are signed 16 bit resolution and need dividing by 10\n");
 }
 
 static uint8_t sizecvt(const int read)
@@ -58,20 +82,20 @@ static int read_dht22_dat(int iPin, int* piHumidity, int* piTemp)
 
     // then pull it up for 40 microseconds
     digitalWrite(iPin, HIGH);
-    delayMicroseconds(40); 
-    
+    delayMicroseconds(40);
+
 	// prepare to read the pin
     pinMode(iPin, INPUT);
 
     // detect change and read data
-    for ( i=0; i< MAXTIMINGS; i++) 
+    for ( i=0; i< MAXTIMINGS; i++)
 	{
         counter = 0;
-        while (sizecvt(digitalRead(iPin)) == laststate) 
+        while (sizecvt(digitalRead(iPin)) == laststate)
 		{
             counter++;
             delayMicroseconds(1);
-            if (counter == 255) 
+            if (counter == 255)
 			{
                 break;
             }
@@ -81,7 +105,7 @@ static int read_dht22_dat(int iPin, int* piHumidity, int* piTemp)
         if (counter == 255) break;
 
         // ignore first 3 transitions
-        if ((i >= 4) && (i%2 == 0)) 
+        if ((i >= 4) && (i%2 == 0))
 		{
             // shove each bit into the storage bytes
             dht22_dat[j/8] <<= 1;
@@ -93,11 +117,11 @@ static int read_dht22_dat(int iPin, int* piHumidity, int* piTemp)
 
     // check we read 40 bits (8bit x 5 ) + verify checksum in the last byte
     // print it out if data is good
-    if ((j >= 40) && (dht22_dat[4] == ((dht22_dat[0] + dht22_dat[1] + dht22_dat[2] + dht22_dat[3]) & 0xFF)) ) 
+    if ((j >= 40) && (dht22_dat[4] == ((dht22_dat[0] + dht22_dat[1] + dht22_dat[2] + dht22_dat[3]) & 0xFF)) )
 	{
 		*piHumidity = dht22_dat[0] * 256 + dht22_dat[1];
 		*piTemp = (dht22_dat[2] & 0x7F)* 256 + dht22_dat[3];
-        if ((dht22_dat[2] & 0x80) != 0)  
+        if ((dht22_dat[2] & 0x80) != 0)
 			*piTemp *= -1;
 
 		return 1;
@@ -117,21 +141,21 @@ int main( int argc, char * argv[])
 	int iReturnCode = 0;
 
     if ( argc !=3 )
-	{	 
+	{
 		PrintUsage();
 		return -1;
 	}
-        
+
 	if (strlen(argv[1]) != 1 || argv[1][0] < '0' || argv[1][0] > '7')
 	{
 		PrintUsage();
-	    printf ("Invalid Pin Value [%s]\n", argv[1]); 
+	    printf ("Invalid Pin Value [%s]\n", argv[1]);
 		return -1;
 	}
 	if (strlen(argv[2]) != 1 || (argv[2][0] != 'V' && argv[2][0] != 'S'))
 	{
 		PrintUsage();
-	    printf ("Invalid Mode Value [%s]\n", argv[2]); 
+	    printf ("Invalid Mode Value [%s]\n", argv[2]);
 		return -1;
 	}
 
@@ -140,8 +164,8 @@ int main( int argc, char * argv[])
 
 	if (cMode == 'V')
 	{
-		printf ("Raspberry Pi wiringPi DHT22 reader\n"); 
-	    printf ("   Reading data from pin %d\n", iPin); 
+		printf ("Raspberry Pi wiringPi DHT22 reader\n");
+	    printf ("   Reading data from pin %d\n", iPin);
 	}
 
     lockfd = open_lockfile(LOCKFILE);
@@ -150,7 +174,7 @@ int main( int argc, char * argv[])
     if (iErr == -1)
 	{
 		if (cMode == 'V')
-			printf ("ERROR : Failed to init WiringPi %d\n", iErr); 
+			printf ("ERROR : Failed to init WiringPi %d\n", iErr);
         iReturnCode = -1;
 	}
 	else
@@ -168,7 +192,7 @@ int main( int argc, char * argv[])
 			for(int i = 0; i<10; i++)
 			{
 				// read_dht22_dat(iPin);
-				if (read_dht22_dat(iPin, &iHumidity, &iTemp) == 1) 
+				if (read_dht22_dat(iPin, &iHumidity, &iTemp) == 1)
 				{
 					if (cMode == 'V')
 						printf("    Humidity = %.2f %% Temperature = %.2f *C \n", (float)(iHumidity/10.0), (float)(iTemp/10.0) );

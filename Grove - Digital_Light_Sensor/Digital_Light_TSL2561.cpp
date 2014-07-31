@@ -1,23 +1,35 @@
 /*
-   TSL2561 library V1.0
-   2010 Copyright (c) Seeed Technology Inc.  All right reserved.
+ * Digital_Light_TSL2561.cpp
+ * A library for TSL2561 at RP
+ *
+ * Copyright (c) 2012 seeed technology inc.
+ * Website    : www.seeed.cc
+ * Author     : zhangkun
+ * Create Time:
+ * Change Log :
+ *
+ * The MIT License (MIT)
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 
-   Original Author: zhangkun
 
-   This library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU Lesser General Public
-   License as published by the Free Software Foundation; either
-   version 2.1 of the License, or (at your option) any later version.
-
-   This library is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-
-   You should have received a copy of the GNU Lesser General Public
-   License along with this library; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-   */
 #include <errno.h>
 #include <string.h>
 #include <stdio.h>
@@ -66,7 +78,7 @@ uint16_t Digital_Light_TSL2561::readRegister(uint16_t deviceAddress, uint16_t ad
     return reBuf[0];
 }
 
-void Digital_Light_TSL2561::writeRegister(uint16_t deviceAddress, uint16_t address, uint16_t val) 
+void Digital_Light_TSL2561::writeRegister(uint16_t deviceAddress, uint16_t address, uint16_t val)
 {
     int file; // fd
     char buf[2] = {0}; // buffer for write.
@@ -124,7 +136,7 @@ uint32_t Digital_Light_TSL2561::calculateLux(uint16_t iGain, uint16_t tInt, uint
     if (!iGain)  chScale = chScale << 4; // scale 1X to 16X
     // scale the channel values
     channel0 = (channel0 * chScale) >> CH_SCALE;
-    channel1 = (channel1 * chScale) >> CH_SCALE; 
+    channel1 = (channel1 * chScale) >> CH_SCALE;
 
     ratio1 = 0;
     if (channel0!= 0) ratio1 = (channel1 << (RATIO_SCALE+1))/channel0;
@@ -166,7 +178,7 @@ uint32_t Digital_Light_TSL2561::calculateLux(uint16_t iGain, uint16_t tInt, uint
             {b=B6C; m=M6C;}
             else if (ratio <= K7C)
             {b=B7C; m=M7C;}
-    } 
+    }
     temp=((channel0*b)-(channel1*m));
     if(temp<0) temp=0;
     temp+=(1<<LUX_SCALE-1);
